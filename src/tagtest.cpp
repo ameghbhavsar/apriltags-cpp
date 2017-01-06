@@ -173,6 +173,10 @@ int main(int argc, char** argv) {
                   << "code = " << d.code << ", "
                   << "rotation = " << d.rotation << "\n";
 	std::cout << "Centre: " << d.cxy.x << ", " << d.cxy.y << "\n";
+  std::cout<<"Point:" << d.p[0].x<<" "<<d.p[1].x<<" "<<d.p[2].x<<" "<<d.p[3].x<<"\n";
+        float orient = std::atan2(d.p[1].y -d.p[0].y,d.p[1].x-d.p[0].x);
+        orient*=180/3.14;
+        std::cout<<"Orientation: "<<orient<<"\n";
       }
     }
     if (!opts.no_images) {

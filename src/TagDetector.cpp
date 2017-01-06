@@ -113,7 +113,7 @@ static const ScalarVec& getCColors() {
 //////////////////////////////////////////////////////////////////////
 
 static void countingSortLongArray(Uint64Array& v,
-				  size_t vlength, 
+				  size_t vlength,
 				  int maxv, uint64_t mask) {
 
   if (maxv < 0) {
@@ -129,17 +129,17 @@ static void countingSortLongArray(Uint64Array& v,
   // counts[w+1].
   //  int counts[] = new int[maxv+2];
   SizeArray counts(maxv+2, 0);
-  
+
   for (size_t i = 0; i < vlength; i++) {
     int w = (int) (v[i]&mask);
     counts[w+1]++;
   }
-  
+
   // accumulate.
   for (size_t i = 1; i < counts.size(); i++) {
     counts[i] += counts[i-1];
   }
-  
+
   //long newv[] = new long[vlength];
   Uint64Array newv(vlength);
 
@@ -148,7 +148,7 @@ static void countingSortLongArray(Uint64Array& v,
     newv[counts[w]] = v[i];
     counts[w]++;
   }
-  
+
   /*       // test (debugging code)
            for (int i = 0; i+1 < newv.length; i++) {
            int w0 = (int) (newv[i]&mask);
@@ -156,7 +156,7 @@ static void countingSortLongArray(Uint64Array& v,
            assert(w0 <= w1);
            }
   */
-  
+
   newv.swap(v);
 
 }
@@ -176,10 +176,10 @@ bool detectionsOverlapTooMuch(const TagDetection& a, const TagDetection& b)
                           pdist(b.p[1], b.p[2]) +
                           pdist(b.p[2], b.p[3]) +
                           pdist(b.p[3], b.p[0]));
-  
+
   // distance (in pixels) between two tag centers.
   at::real d = pdist(a.cxy, b.cxy);
-  
+
   // reject pairs where the distance between centroids is
   // smaller than the "radius" of one of the tags.
   return (d < radius);
@@ -207,7 +207,7 @@ TagDetectorParams::TagDetectorParams() :
   adaptiveThresholdRadius(kDefaultAdaptiveThresholdRadius),
   refineQuads(kDefaultRefineQuads),
   refineBad(kDefaultRefineBad),
-  newQuadAlgorithm(kDefaultNewQuadAlgorithm) 
+  newQuadAlgorithm(kDefaultNewQuadAlgorithm)
 {}
 
 
@@ -229,7 +229,7 @@ TagDetector::TagDetector(const TagFamily& f,
       at::real fj = at::real(j+0.5) / dd;
       at::real t = -1;
       if (i == -1 || j == -1 || i == dd || j == dd) {
-        t = 255; 
+        t = 255;
       } else if (i == 0 || j == 0 || i+1 == dd || j+1 == dd) {
         t = 0;
       }
@@ -250,9 +250,9 @@ at::real TagDetector::arctan2(at::real y, at::real x) {
   at::real coeff_1 = at::real(M_PI/4);
   at::real coeff_2 = 3*coeff_1;
   at::real abs_y = fabs(y)+MathUtil::epsilon;      // kludge to prevent 0/0 condition
-  
+
   at::real angle;
-  
+
   if (x >= 0) {
     at::real r = (x - abs_y) / (x + abs_y);
     angle = coeff_1 - coeff_1 * r;
@@ -260,16 +260,16 @@ at::real TagDetector::arctan2(at::real y, at::real x) {
     at::real r = (x + abs_y) / (abs_y - x);
       angle = coeff_2 - coeff_1 * r;
   }
-  
+
   if (y < 0) {
     return -angle;     // negate if in quad III or IV
   } else {
     return angle;
   }
-  
+
 }
 
-int TagDetector::edgeCost(at::real theta0, at::real mag0, 
+int TagDetector::edgeCost(at::real theta0, at::real mag0,
 			  at::real theta1, at::real mag1) const {
 
   if (mag0 < params.minMag || mag1 < params.minMag) {
@@ -284,7 +284,7 @@ int TagDetector::edgeCost(at::real theta0, at::real mag0,
   at::real normErr = thetaErr / params.maxEdgeCost;
 
   assert( int(normErr*WEIGHT_SCALE) >= 0 );
-    
+
   return (int) (normErr * WEIGHT_SCALE);
 
 }
@@ -294,7 +294,7 @@ cv::Mat gaussianBlur(const cv::Mat& input, at::real sigma) {
   cv::Mat output;
   cv::GaussianBlur(input, output, cv::Size(0,0), sigma);
   return output;
-  
+
 }
 
 void emitDebugImage(const std::string& windowName,
@@ -331,8 +331,8 @@ void emitDebugImage(const std::string& windowName,
 
 #ifdef HAVE_CGAL
 
-static bool ccw(const at::Point& p1, 
-                const at::Point& p2, 
+static bool ccw(const at::Point& p1,
+                const at::Point& p2,
                 const at::Point& p3) {
 
   return (p2.x - p1.x)*(p3.y - p1.y) - (p2.y - p1.y)*(p3.x - p1.x) > 0;
@@ -356,10 +356,10 @@ void TagDetector::getQuads_MZ(const Images& images,
 
   cv::Mat thresh;
 
-  cv::adaptiveThreshold(images.origBW8, thresh, 255, 
+  cv::adaptiveThreshold(images.origBW8, thresh, 255,
                         cv::ADAPTIVE_THRESH_MEAN_C,
-                        cv::THRESH_BINARY_INV, 
-                        params.adaptiveThresholdRadius, 
+                        cv::THRESH_BINARY_INV,
+                        params.adaptiveThresholdRadius,
                         params.adaptiveThresholdValue);
 
 
@@ -430,7 +430,7 @@ void TagDetector::getQuads_MZ(const Images& images,
 
   int sl = tagFamily.d + 2*tagFamily.blackBorder;
   int ta = sl*sl;
-    
+
   for (size_t i=0; i<contours.size(); ++i) {
 
 
@@ -495,26 +495,26 @@ void TagDetector::getQuads_MZ(const Images& images,
   typedef CGAL::Simple_cartesian<int>   K;
   typedef K::Point_2                    Point;
   typedef CGAL::Polygon_2<K>            Polygon_2;
-  
+
   for (size_t i=0; i<hulls.size(); ++i) {
-    
+
     Polygon_2 cpoly;
     for (size_t j=0; j<hulls[i].size(); ++j) {
       cpoly.push_back( Point( hulls[i][j].x, hulls[i][j].y ) );
     }
-    
+
     Polygon_2 k_gon;
-    CGAL::maximum_area_inscribed_k_gon_2( cpoly.vertices_begin(), 
-                                          cpoly.vertices_end(), 4, 
+    CGAL::maximum_area_inscribed_k_gon_2( cpoly.vertices_begin(),
+                                          cpoly.vertices_end(), 4,
                                           std::back_inserter(k_gon));
 
     at::Point p[4];
-    
+
     bool ok = true;
 
     for (int j=0; j<4; ++j) {
       const Point& ki = k_gon[4-j-1];
-      if (ki.x() <= 1 || ki.x() >= images.orig.cols-2 || 
+      if (ki.x() <= 1 || ki.x() >= images.orig.cols-2 ||
           ki.y() <= 1 || ki.y() >= images.orig.rows-2) {
         ok = false;
         break;
@@ -567,7 +567,7 @@ void TagDetector::getQuads_MZ(const Images& images,
     if (ok && dmax / dmin < 6) {
       quads.push_back(new Quad(p, images.opticalCenter, observedPerimeter));
     }
-    
+
   }
 
   END_PROFILE(5, 0);
@@ -585,9 +585,9 @@ const at::real refine_max_grad = 1e-3;
 void TagDetector::refineQuadTT(const Images& images,
                                Quad& quad) const {
 
-    refineQuad( images.origBW8, 
-                images.gx, images.gy, 
-                quad.p, tpoints, 
+    refineQuad( images.origBW8,
+                images.gx, images.gy,
+                quad.p, tpoints,
                 refine_debug,
                 refine_max_iter,
                 refine_max_grad );
@@ -606,7 +606,7 @@ struct DSegment {
 
   DSegment() {}
 
-  DSegment(const at::Point& p1, 
+  DSegment(const at::Point& p1,
            const at::Point& p2) {
 
     p = p1;
@@ -617,7 +617,7 @@ struct DSegment {
 
   }
 
-  bool query(const at::Point& q, 
+  bool query(const at::Point& q,
              at::real utol,
              at::real dmin,
              at::real dmax) {
@@ -637,7 +637,7 @@ struct DSegment {
     return true;
 
   }
-  
+
 };
 
 #define refineQuad(i, q) refineQuadLSQ(i, q)
@@ -656,7 +656,7 @@ void TagDetector::refineQuadL(const Images& images,
   dilate(r, border, sz);
 
   DSegment dsegs[4];
-    
+
   for (int i=0; i<4; ++i) {
     int ii = (i+1)%4;
     dsegs[i] = DSegment(quad.p[i], quad.p[ii]);
@@ -681,14 +681,14 @@ void TagDetector::refineQuadL(const Images& images,
   }
 
   at::real iscl = 1/(imax-imin);
-      
+
   for (int y=r.y; y<y1; ++y) {
     for (int x=r.x; x<x1; ++x) {
       at::Point p = at::Point(x,y) + delta;
       for (int i=0; i<4; ++i) {
         if (dsegs[i].query(p, edge, -outer, inner)) {
           at::real ixy = (images.origBW8(y,x)-imin)*iscl;
-          if (ixy >= 0.7) { 
+          if (ixy >= 0.7) {
             xywarrays[i].push_back( XYW(p.x, p.y,  1) );
           } else if (ixy <= 0.3) {
             xywarrays[i].push_back( XYW(p.x, p.y, -1) );
@@ -713,19 +713,19 @@ void TagDetector::refineQuadL(const Images& images,
 
       at::Vec3 g(0,0,0);
       at::real loss = 0;
-      
+
       for (size_t j=0; j<pts.size(); ++j) {
-        
+
         at::Vec3 pj(pts[j].x, pts[j].y, 1);
         at::real cj = pts[j].w;
 
         at::real u = l.dot(pj) * cj;
-        
-        if (u < m) { 
-          loss += m-u; 
+
+        if (u < m) {
+          loss += m-u;
           g += cj*pj;
         }
-        
+
       }
 
       //std::cout << "at iter " << iter << ", loss=" << loss << ", g=" << g[0] << "," << g[1] << "," << g[2] << "\n";
@@ -763,14 +763,14 @@ void TagDetector::refineQuadL(const Images& images,
 
       const cv::Scalar& color = ccolors[ i % ccolors.size() ];
 
-      cv::line( small, 
-                (dsegs[i].p+delta)*scl, 
-                (dsegs[i].p+delta+dsegs[i].length*dsegs[i].t)*scl, 
+      cv::line( small,
+                (dsegs[i].p+delta)*scl,
+                (dsegs[i].p+delta+dsegs[i].length*dsegs[i].t)*scl,
                 color, 1, CV_AA );
 
-      cv::line( small, 
-                (quad.p[i]+delta)*scl, 
-                (quad.p[(i+1)%4]+delta)*scl, 
+      cv::line( small,
+                (quad.p[i]+delta)*scl,
+                (quad.p[(i+1)%4]+delta)*scl,
                 color, 2, CV_AA );
 
 
@@ -784,11 +784,11 @@ void TagDetector::refineQuadL(const Images& images,
       }
     }
 
-    emitDebugImage(debugWindowName, 
+    emitDebugImage(debugWindowName,
                    8, 0, debugNumberFiles,
                    "refineQuadL",
                    small, ScaleNone, false);
-    
+
 
   }
 
@@ -803,7 +803,7 @@ void TagDetector::refineQuads(const Images& images,
   START_PROFILE(7,1, "refine quads");
 
   for (size_t i=0; i<quads.size(); ++i) {
-    
+
     Quad& quad = *(quads[i]);
 
     refineQuad( images, quad );
@@ -847,7 +847,7 @@ void TagDetector::getQuads_AT(const Images& images,
       for (int x=0; x<small.cols; ++x) {
         small(y,x) = 0.25 * ( fimseg(2*y+0, 2*x+0) +
                               fimseg(2*y+0, 2*x+1) +
-                              fimseg(2*y+1, 2*x+0) + 
+                              fimseg(2*y+1, 2*x+0) +
                               fimseg(2*y+1, 2*x+1) );
       }
     }
@@ -872,7 +872,7 @@ void TagDetector::getQuads_AT(const Images& images,
 
       at::real Ix = fimseg(y, x+1) - fimseg(y, x-1);
       at::real Iy = fimseg(y+1, x) - fimseg(y-1, x);
-        
+
       at::real mag = Ix*Ix + Iy*Iy;
 
       fimMag(y, x) = mag;
@@ -882,7 +882,7 @@ void TagDetector::getQuads_AT(const Images& images,
 #else
       at::real theta = atan2(Iy, Ix);
 #endif
-      
+
       fimTheta(y, x) = theta;
 
     }
@@ -893,10 +893,10 @@ void TagDetector::getQuads_AT(const Images& images,
   if (debug) {
 
     if (params.segSigma > 0) {
-      emitDebugImage(debugWindowName, 
+      emitDebugImage(debugWindowName,
                      2, 0, debugNumberFiles,
-                     "Seg. Blur", 
-                     fimseg, ScaleNone, true); 
+                     "Seg. Blur",
+                     fimseg, ScaleNone, true);
     }
 
     at::real mmin =  AT_REAL_MAX;
@@ -929,15 +929,15 @@ void TagDetector::getQuads_AT(const Images& images,
     }
 
     std::cout << "\n";
-    
+
     emitDebugImage(debugWindowName,
                    2, 1, debugNumberFiles,
-                   "Theta", 
+                   "Theta",
                    fimTheta, ScaleMinMax, true);
-    
-    emitDebugImage(debugWindowName, 
+
+    emitDebugImage(debugWindowName,
                    2, 2, debugNumberFiles,
-                   "Magnitude", 
+                   "Magnitude",
                    fimMag, ScaleMinMax, true);
 
   }
@@ -953,12 +953,12 @@ void TagDetector::getQuads_AT(const Images& images,
   UnionFindSimple uf(fimseg.cols*fimseg.rows);
 
   if (true) {
-    
+
     START_PROFILE(3,1, "build edges array");
 
     int width = fimseg.cols;
     int height = fimseg.rows;
-    
+
     Uint64Array edges(width*height*4);
 
     int nedges = 0;
@@ -966,9 +966,9 @@ void TagDetector::getQuads_AT(const Images& images,
     // for efficiency, each edge is encoded as a single
     // long. The constants below are used to pack/unpack the
     // long.
-    const uint64_t IDA_SHIFT = 40, IDB_SHIFT = 16, 
+    const uint64_t IDA_SHIFT = 40, IDB_SHIFT = 16,
       INDEX_MASK = (1<<24) - 1, WEIGHT_MASK=(1<<16)-1;
-    
+
     // bounds on the thetas assigned to this group. Note that
     // because theta is periodic, these are defined such that the
     // average value is contained *within* the interval.
@@ -976,7 +976,7 @@ void TagDetector::getQuads_AT(const Images& images,
     RealArray tmax(width*height);
     RealArray mmin(width*height);
     RealArray mmax(width*height);
-    
+
     for (int y = 2; y+2 < fimseg.rows; y++) {
       for (int x = 2; x+2 < fimseg.cols; x++) {
 
@@ -996,48 +996,48 @@ void TagDetector::getQuads_AT(const Images& images,
         int edgeCost;
 
         // RIGHT
-        edgeCost = this->edgeCost(theta0, mag0, 
-                                  fimTheta(y, x+1), 
+        edgeCost = this->edgeCost(theta0, mag0,
+                                  fimTheta(y, x+1),
                                   fimMag(y,x+1));
 
         if (edgeCost >= 0) {
-          edges[nedges++] = 
-            (uint64_t(y*width+x)<<IDA_SHIFT) + 
+          edges[nedges++] =
+            (uint64_t(y*width+x)<<IDA_SHIFT) +
 	    (uint64_t(y*width+x+1)<<IDB_SHIFT) + edgeCost;
         }
 
         // DOWN
-        edgeCost = this->edgeCost(theta0, mag0, 
-                                  fimTheta(y+1,x), 
+        edgeCost = this->edgeCost(theta0, mag0,
+                                  fimTheta(y+1,x),
                                   fimMag(y+1,x));
 
         if (edgeCost >= 0) {
-          edges[nedges++] = 
-            (uint64_t(y*width+x)<<IDA_SHIFT) + 
+          edges[nedges++] =
+            (uint64_t(y*width+x)<<IDA_SHIFT) +
             (uint64_t((y+1)*width+x)<<IDB_SHIFT) + edgeCost;
         }
 
         // DOWN & RIGHT
-        edgeCost = this->edgeCost(theta0, mag0, 
-                                  fimTheta(y+1,x+1), 
+        edgeCost = this->edgeCost(theta0, mag0,
+                                  fimTheta(y+1,x+1),
                                   fimMag(y+1,x+1));
 
         if (edgeCost >= 0) {
-          edges[nedges++] = 
-            (uint64_t(y*width+x)<<IDA_SHIFT) + 
+          edges[nedges++] =
+            (uint64_t(y*width+x)<<IDA_SHIFT) +
             (uint64_t((y+1)*width+x+1)<<IDB_SHIFT) + edgeCost;
         }
 
 
 
         // DOWN & LEFT
-        edgeCost = (x == 0) ? -1 : this->edgeCost(theta0, mag0, 
-                                                  fimTheta(y+1,x-1), 
+        edgeCost = (x == 0) ? -1 : this->edgeCost(theta0, mag0,
+                                                  fimTheta(y+1,x-1),
                                                   fimMag(y+1,x-1));
 
         if (edgeCost >= 0) {
-          edges[nedges++] = 
-            (uint64_t(y*width+x)<<IDA_SHIFT) + 
+          edges[nedges++] =
+            (uint64_t(y*width+x)<<IDA_SHIFT) +
             (uint64_t((y+1)*width+x-1)<<IDB_SHIFT) + edgeCost;
         }
 
@@ -1046,7 +1046,7 @@ void TagDetector::getQuads_AT(const Images& images,
         // hasn't been disabled.)
       }
     }
-    
+
     END_PROFILE(3,1);
 
     START_PROFILE(3,2, "sort edges array");
@@ -1085,7 +1085,7 @@ void TagDetector::getQuads_AT(const Images& images,
       // bshift will be a multiple of 2pi that aligns the spans
       // of b with a so that we can properly take the union of
       // them.
-      at::real bshift = MathUtil::mod2pi((tmina+tmaxa)/2, 
+      at::real bshift = MathUtil::mod2pi((tmina+tmaxa)/2,
                                        (tminb+tmaxb)/2) - (tminb+tmaxb)/2;
 
       at::real tminab = std::min(tmina, tminb + bshift);
@@ -1129,7 +1129,7 @@ void TagDetector::getQuads_AT(const Images& images,
   // these points.
 
   START_PROFILE(4,0, "build clusters");
-  
+
   ClusterLookup clusters;
 
   for (int y = 0; y+1 < fimseg.rows; y++) {
@@ -1138,9 +1138,9 @@ void TagDetector::getQuads_AT(const Images& images,
       if (uf.getSetSize(y*fimseg.cols+x) < params.minimumSegmentSize) {
         continue;
       }
-      
+
       int rep = (int) uf.getRepresentative(y*fimseg.cols + x);
-      
+
       clusters[rep].push_back(XYW(x+0.5,y+0.5,fimMag(y,x)));
 
     }
@@ -1155,7 +1155,7 @@ void TagDetector::getQuads_AT(const Images& images,
 
     const ScalarVec& ccolors = getCColors();
 
-    for (ClusterLookup::const_iterator i=clusters.begin(); 
+    for (ClusterLookup::const_iterator i=clusters.begin();
          i!=clusters.end(); ++i) {
 
       const XYWArray& xyw = i->second;
@@ -1175,9 +1175,9 @@ void TagDetector::getQuads_AT(const Images& images,
 
     }
 
-    emitDebugImage(debugWindowName, 
+    emitDebugImage(debugWindowName,
                    4, 0, debugNumberFiles,
-                   "Clusters", 
+                   "Clusters",
                    m, ScaleNone, true);
 
   }
@@ -1202,7 +1202,7 @@ void TagDetector::getQuads_AT(const Images& images,
     if (length < params.minimumLineLength) {
       continue;
     }
-    
+
     Segment* seg = new Segment();
     at::real dy = gseg.p2.y - gseg.p1.y;
     at::real dx = gseg.p2.x - gseg.p1.x;
@@ -1278,18 +1278,18 @@ void TagDetector::getQuads_AT(const Images& images,
     for (size_t i=0; i<segments.size(); ++i) {
       const Segment* seg = segments[i];
       const cv::Scalar& color = ccolors[ i % ccolors.size() ];
-      cv::line( rgbu, 
+      cv::line( rgbu,
                 scl*at::Point(seg->x0, seg->y0),
                 scl*at::Point(seg->x1, seg->y1),
                 color, 1, CV_AA );
     }
-    emitDebugImage(debugWindowName, 
+    emitDebugImage(debugWindowName,
                    5, 0, debugNumberFiles,
-                   "Segmented", 
+                   "Segmented",
                    rgbu, ScaleNone, false);
   }
 
-  
+
   ////////////////////////////////////////////////////////////////
   // Step six. For each segment, find segments that begin where
   // this segment ends. (We will chain segments together
@@ -1315,7 +1315,7 @@ void TagDetector::getQuads_AT(const Images& images,
     gridder.find(parent->x1, parent->y1, 0.5*parent->length, findResults);
 
     for (size_t j=0; j<findResults.size(); ++j) {
-      
+
       Segment* child = findResults[j];
 
       if (MathUtil::mod2pi(child->theta - parent->theta) > 0) {
@@ -1329,7 +1329,7 @@ void TagDetector::getQuads_AT(const Images& images,
 
       at::real parentDist = pdist(p, parent->x1, parent->y1);
       at::real childDist = pdist(p, child->x0, child->y0);
-      
+
       if (std::max(parentDist, childDist) > parent->length) {
         continue;
       }
@@ -1348,7 +1348,7 @@ void TagDetector::getQuads_AT(const Images& images,
   // form a loop of length 4. Add those to the quads list.
 
   START_PROFILE(7,0, "build quads");
-  
+
   Segment* path[5];
 
   for (size_t i=0; i<segments.size(); ++i) {
@@ -1366,7 +1366,7 @@ void TagDetector::getQuads_AT(const Images& images,
 
 }
 
-void TagDetector::makeImages(const cv::Mat& orig, 
+void TagDetector::makeImages(const cv::Mat& orig,
                              const at::Point& opticalCenter,
                              Images& images) const {
 
@@ -1374,11 +1374,11 @@ void TagDetector::makeImages(const cv::Mat& orig,
 
   images.opticalCenter = opticalCenter;
 
-  if (debug) { 
-    emitDebugImage(debugWindowName, 
+  if (debug) {
+    emitDebugImage(debugWindowName,
                    0, 0, debugNumberFiles,
-                   "Orig", 
-                   orig, ScaleNone, true); 
+                   "Orig",
+                   orig, ScaleNone, true);
   }
 
   // This is a very long function, but it can't really be
@@ -1404,7 +1404,7 @@ void TagDetector::makeImages(const cv::Mat& orig,
   if (NEW_QUAD_ALGORITHM || params.refineQuads || params.refineBad) {
 
     START_PROFILE(1, 2, "convert to 8-bit");
-    
+
     if (images.origBW.depth() == CV_8U) {
       images.origBW8 = images.origBW;
     } else {
@@ -1418,17 +1418,17 @@ void TagDetector::makeImages(const cv::Mat& orig,
     START_PROFILE(1, 3, "compute image gradients");
 
     if (params.refineQuads || params.refineBad) {
-      
+
       cv::Sobel( images.origBW8, images.gx, at::IMAGE_TYPE, 1, 0 );
       cv::Sobel( images.origBW8, images.gy, at::IMAGE_TYPE, 0, 1 );
-      
+
       images.gx *= 0.25;
       images.gy *= 0.25;
 
     }
 
     END_PROFILE(1, 3);
-    
+
       */
 
   }
@@ -1462,10 +1462,10 @@ void TagDetector::makeImages(const cv::Mat& orig,
   if (debug) {
 
     if (!NEW_QUAD_ALGORITHM && params.sigma > 0) {
-      emitDebugImage(debugWindowName, 
+      emitDebugImage(debugWindowName,
                      1, 0, debugNumberFiles,
-                     "Blur", 
-                     images.fim, ScaleNone, true); 
+                     "Blur",
+                     images.fim, ScaleNone, true);
     }
 
     cv::Mat rgb;
@@ -1485,7 +1485,7 @@ void TagDetector::makeImages(const cv::Mat& orig,
     }
 
   }
-  
+
 
 }
 
@@ -1493,7 +1493,7 @@ void TagDetector::process(const cv::Mat& orig,
                           const at::Point& opticalCenter,
                           TagDetectionArray& detections) const {
 
-  
+
   if (params.newQuadAlgorithm && !NEW_QUAD_ALGORITHM) {
     std::cerr << "*** WARNING: NEW QUAD ALGORITHM REQUESTED, BUT COMPILED WITHOUT CGAL SUPPORT, FALLING BACK TO OLD ALGORITHM. ***\n";
   }
@@ -1518,7 +1518,7 @@ void TagDetector::process(const cv::Mat& orig,
   if (params.refineQuads) {
     refineQuads(images, quads);
     if (debug) { debugShowQuads(images, quads, 8, "Refined quads"); }
-  } 
+  }
 
   decode(images, quads, detections);
 
@@ -1531,7 +1531,7 @@ void TagDetector::process(const cv::Mat& orig,
 
 }
 
-void TagDetector::sampleGradient(const Images& images, 
+void TagDetector::sampleGradient(const Images& images,
                                  int x, int y,
                                  at::real& gx, at::real& gy) {
 
@@ -1616,12 +1616,12 @@ void TagDetector::refineQuadLSQ(const Images& images,
     cv::Mat_<cv::Vec3b> small = subimageWithBorder(rgbu, rect, border);
 
     at::Point delta = at::Point(border-rect.x, border-rect.y);
-    
+
     for (int i=0; i<4; ++i) {
 
       const ScalarVec& ccolors = getCColors();
       const cv::Scalar& color = ccolors[i];
-      const cv::Vec3b vc(color[0], color[1], color[2]);      
+      const cv::Vec3b vc(color[0], color[1], color[2]);
 
       std::cout << "zoom = " << zoom << ", outer = " << outer << " inner = " << inner << "\n";
 
@@ -1636,16 +1636,16 @@ void TagDetector::refineQuadLSQ(const Images& images,
           small(y, x) = (1-f)*small(y, x) + f*vc;
         }
       }
-        
+
     }
-    
+
     emitDebugImage(debugWindowName,
                    7, 0, debugNumberFiles,
                    "Quad clusters",
                    small, ScaleNone, true);
 
   }
-  
+
   GLineSegment2D lines[4];
 
   for (int i=0; i<4; ++i) {
@@ -1668,7 +1668,7 @@ void TagDetector::refineQuadLSQ(const Images& images,
     }
     quad.recomputeHomography();
   }
-  
+
 
 }
 
@@ -1699,7 +1699,7 @@ void TagDetector::debugShowQuads(const Images& images,
                    ScaleNone, false);
 
   } else {
-  
+
 
     for (size_t i=0; i<quads.size(); ++i) {
 
@@ -1718,7 +1718,7 @@ void TagDetector::debugShowQuads(const Images& images,
       at::real scl = resizeToDisplay(small, big);
 
       for (int j=0; j<4; ++j) {
-        cv::line(big, (quad.p[j]+delta)*scl, (quad.p[(j+1)%4]+delta)*scl, 
+        cv::line(big, (quad.p[j]+delta)*scl, (quad.p[(j+1)%4]+delta)*scl,
                  CV_RGB(255,0,0), 1, CV_AA);
       }
 
@@ -1735,7 +1735,7 @@ void TagDetector::debugShowQuads(const Images& images,
 
 }
 
-void TagDetector::decode(const Images& images, 
+void TagDetector::decode(const Images& images,
                          const QuadArray& quads,
                          TagDetectionArray& detections) const {
 
@@ -1759,11 +1759,11 @@ void TagDetector::decode(const Images& images,
       START_PROFILE(8, 1, "refine bad");
 
       refineQuad( images, quad );
-      
+
       END_PROFILE(8, 1);
 
       decodeQuad(images, quad, i, detections);
-      
+
     }
 
   }
@@ -1807,7 +1807,7 @@ void TagDetector::decode(const Images& images,
 
       // otherwise, keep the new one if it either has
       // *lower* error, or has greater perimeter
-      if (d.hammingDistance < od.hammingDistance || 
+      if (d.hammingDistance < od.hammingDistance ||
           d.observedPerimeter > od.observedPerimeter) {
         goodDetections[odidx] = d;
       }
@@ -1827,7 +1827,7 @@ void TagDetector::decode(const Images& images,
 
 }
 
-bool TagDetector::decodeQuad(const Images& images, 
+bool TagDetector::decodeQuad(const Images& images,
                              const Quad& quad, size_t i,
                              TagDetectionArray& detections) const {
 
@@ -1859,7 +1859,7 @@ bool TagDetector::decodeQuad(const Images& images,
       if (pxy.x < 0 || pxy.x >= width || pxy.y < 0 || pxy.y >= height) {
         continue;
       }
-        
+
       if ((iy == -1 || iy == dd) || (ix == -1 || ix == dd)) {
         // part of the outer white border.
         whiteModel.addObservation(x, y, v);
@@ -1874,7 +1874,7 @@ bool TagDetector::decodeQuad(const Images& images,
   }
 
   if (debug) {
-      
+
     GrayModel* models[2];
     models[0] = &whiteModel;
     models[1] = &blackModel;
@@ -1925,7 +1925,7 @@ bool TagDetector::decodeQuad(const Images& images,
         continue;
       }
 
-      at::real threshold = (blackModel.interpolate(x, y) + 
+      at::real threshold = (blackModel.interpolate(x, y) +
                             whiteModel.interpolate(x, y))*.5;
 
       tagCode = tagCode << TagFamily::code_t(1);
@@ -1965,13 +1965,13 @@ bool TagDetector::decodeQuad(const Images& images,
 
       cv::Point delta(0,0);
 
-        
+
       for (size_t k=0; k<bpoints.size(); ++k) {
         cv::Point pk = bpoints[k];
         cv::rectangle(rgbu,
                       pk - delta, pk + delta,
                       CV_RGB(0,0,0), 1, 4);
-          
+
       }
 
       for (size_t k=0; k<wpoints.size(); ++k) {
@@ -2008,10 +2008,10 @@ bool TagDetector::decodeQuad(const Images& images,
     if (true) {
       at::real c = cos(d.rotation*M_PI/2.0);
       at::real s = sin(d.rotation*M_PI/2.0);
-      at::real R[9] = { 
-        c, -s, 0, 
-        s,  c, 0, 
-        0,  0, 1 
+      at::real R[9] = {
+        c, -s, 0,
+        s,  c, 0,
+        0,  0, 1
       };
       at::Mat Rmat(3, 3, R);
       d.homography = d.homography * Rmat;
@@ -2031,9 +2031,9 @@ bool TagDetector::decodeQuad(const Images& images,
 }
 
 void TagDetector::search(const at::Point& opticalCenter,
-                         QuadArray& quads, 
+                         QuadArray& quads,
                          Segment* path[5],
-                         Segment* parent, 
+                         Segment* parent,
                          int depth) const {
 
   if (depth == 4) {
@@ -2069,10 +2069,10 @@ void TagDetector::search(const at::Point& opticalCenter,
     at::real t2 = atan2(p[3].y - p[2].y, p[3].x - p[2].x);
     at::real t3 = atan2(p[0].y - p[3].y, p[0].x - p[3].x);
 #endif
-      
+
     at::real ttheta = ( MathUtil::mod2pi(t1-t0) + MathUtil::mod2pi(t2-t1) +
                       MathUtil::mod2pi(t3-t2) + MathUtil::mod2pi(t0-t3) );
-        
+
     // the magic value is -2*PI. It should be exact,
     // but we allow for (lots of) numeric imprecision.
     if (ttheta < -7 || ttheta > -5) {
@@ -2085,26 +2085,26 @@ void TagDetector::search(const at::Point& opticalCenter,
     at::real d3 = pdist(p[3], p[0]);
     at::real d4 = pdist(p[0], p[2]);
     at::real d5 = pdist(p[1], p[3]);
-      
+
     // check sizes
     if (d0 < params.minimumTagSize || d1 < params.minimumTagSize ||
         d2 < params.minimumTagSize || d3 < params.minimumTagSize ||
         d4 < params.minimumTagSize || d5 < params.minimumTagSize) {
       return;
     }
-    
+
     // check aspect ratio
     at::real dmax = std::max(std::max(d0, d1), std::max(d2, d3));
     at::real dmin = std::min(std::min(d0, d1), std::min(d2, d3));
-    
+
     if (dmax > dmin * params.maxQuadAspectRatio) {
       return;
     }
-    
+
     Quad* q = new Quad(p, opticalCenter, observedPerimeter);
     quads.push_back(q);
-     
-  } else {   
+
+  } else {
 
     // Not terminal depth. Recurse on any children that obey the correct handedness.
 
@@ -2112,7 +2112,7 @@ void TagDetector::search(const at::Point& opticalCenter,
 
       Segment* child = parent->children[i];
       // (handedness was checked when we created the children)
-      
+
       // we could rediscover each quad 4 times (starting from
       // each corner). If we had an arbitrary ordering over
       // points, we can eliminate the redundant detections by
@@ -2121,7 +2121,7 @@ void TagDetector::search(const at::Point& opticalCenter,
       if (child->theta > path[0]->theta) {
         continue;
       }
-      
+
       path[depth+1] = child;
       search(opticalCenter, quads, path, child, depth + 1);
 
@@ -2163,7 +2163,7 @@ void TagDetector::test() {
     std::cout << l[i] << " ";
   }
   std::cout << "]\n";
-  
+
 
 
 
