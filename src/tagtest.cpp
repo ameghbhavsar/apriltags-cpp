@@ -172,6 +172,7 @@ int main(int argc, char** argv) {
         std::cout << " - Detection: id = " << d.id << ", "
                   << "code = " << d.code << ", "
                   << "rotation = " << d.rotation << "\n";
+	std::cout << "Centre: " << d.cxy.x << ", " << d.cxy.y << "\n";
       }
     }
     if (!opts.no_images) {
