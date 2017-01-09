@@ -1,11 +1,11 @@
 add_library(apriltags
   CameraUtil.cpp
   DebugImage.cpp
-  Geometry.cpp 
+  Geometry.cpp
   GrayModel.cpp
-  MathUtil.cpp 
+  MathUtil.cpp
   Refine.cpp
-  TagDetector.cpp 
+  TagDetector.cpp
   TagFamily.cpp
   TagFamilies.cpp
   UnionFindSimple.cpp
@@ -36,4 +36,4 @@ if (CAIRO_FOUND)
   add_executable(maketags maketags.cpp)
   target_link_libraries(maketags ${CAIRO_LIBRARIES} ${AT_LIBS} ${CAIRO_LIBS})
 
-endif() 
+endif()

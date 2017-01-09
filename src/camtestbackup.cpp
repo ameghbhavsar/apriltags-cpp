@@ -186,25 +186,8 @@ int main(int argc, char** argv) {
 
     vc >> frame;
     if (frame.empty()) { break; }
-    clock_t start = clock();
+
     detector.process(frame, opticalCenter, detections);
-
-    clock_t end = clock();
-
-     std::cout << "\n";
-      std::cout << "Got " << detections.size() << " detections in "
-                << double(end-start)/CLOCKS_PER_SEC << " seconds.\n";
-      for (size_t i=0; i<detections.size(); ++i) {
-        const TagDetection& d = detections[i];
-        std::cout << " - Detection: id = " << d.id << ", "
-                  << "code = " << d.code << ", "
-                  << "rotation = " << d.rotation << "\n";
-	std::cout << "Centre: " << d.cxy.x << ", " << d.cxy.y << "\n";
-  std::cout<<"Point:" << d.p[0].x<<" "<<d.p[1].x<<" "<<d.p[2].x<<" "<<d.p[3].x<<"\n";
-        float orient = std::atan2(d.p[1].y -d.p[0].y,d.p[1].x-d.p[0].x);
-        orient*=180/3.14;
-        std::cout<<"Orientation: "<<orient<<"\n";
-    }
 
     cv::Mat show;
     if (detections.empty()) {

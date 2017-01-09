@@ -18,10 +18,6 @@
 
 #define DEFAULT_TAG_FAMILY "Tag36h11"
 
-using namespace std;
-using namespace at;
-using namespace cv;
-
 typedef struct TagTestOptions {
   TagTestOptions() :
       show_debug_info(false),
@@ -130,8 +126,6 @@ TagTestOptions parse_options(int argc, char** argv) {
 
 int main(int argc, char** argv) {
 
-  namedWindow( "Original", WINDOW_AUTOSIZE );
-  namedWindow( "Detected", WINDOW_AUTOSIZE );
   const std::string win = "Tag test";
 
   TagTestOptions opts = parse_options(argc, argv);
@@ -150,10 +144,10 @@ int main(int argc, char** argv) {
   }
 
   TagDetectionArray detections;
-  cv::Mat src;
-  cv::VideoCapture a(0);
-  while(a.isOpened()){
-    a>>src;
+  for (int i=optind; i<argc; ++i) {
+    cv::Mat src = cv::imread(argv[i]);
+    if (src.empty()) { continue; }
+
     while (std::max(src.rows, src.cols) > 800) {
       cv::Mat tmp;
       cv::resize(src, tmp, cv::Size(0,0), 0.5, 0.5);
@@ -162,9 +156,8 @@ int main(int argc, char** argv) {
     cv::Point2d opticalCenter(0.5*src.rows, 0.5*src.cols);
 
     if (!detector.debug && !opts.no_images) {
-      imshow("Original",src);
+      labelAndWaitForKey(win, "Original", src, ScaleNone, true);
     }
-
 
     clock_t start = clock();
     detector.process(src, opticalCenter, detections);
@@ -188,10 +181,10 @@ int main(int argc, char** argv) {
     }
     if (!opts.no_images) {
       cv::Mat img = family.superimposeDetections(src, detections);
-      imshow("Detected",img);
-      waitKey(10);
+      labelAndWaitForKey(win, "Detected", img, ScaleNone, true);
     }
   }
+
   if (opts.show_timing) detector.reportTimers();
   return 0;
 }
