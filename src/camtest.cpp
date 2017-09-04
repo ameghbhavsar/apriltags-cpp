@@ -10,6 +10,7 @@
 
 #include <sys/time.h>
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <getopt.h>
 
@@ -45,6 +46,12 @@ typedef struct CamTestOptions {
   bool mirror_display;
 } CamTestOptions;
 
+typedef struct Pose{
+  int id;
+  float x;
+  float y;
+  float theta;
+}Pose;
 
 void print_usage(const char* tool_name, FILE* output=stderr) {
 
@@ -133,6 +140,11 @@ CamTestOptions parse_options(int argc, char** argv) {
 
 int main(int argc, char** argv) {
 
+  std::fstream f;
+  f.open("pose.txt",std::ios::in | std::ios::out | std::ios::binary);
+
+  Pose P;
+
   CamTestOptions opts = parse_options(argc, argv);
 
   TagFamily family(opts.family_str);
@@ -161,14 +173,16 @@ int main(int argc, char** argv) {
             << vc.get(CV_CAP_PROP_FRAME_WIDTH) << "x"
             << vc.get(CV_CAP_PROP_FRAME_HEIGHT) << "\n";
 
-  cv::Mat frame;
+  cv::Mat frame1,frame;
   cv::Point2d opticalCenter;
 
-  vc >> frame;
-  if (frame.empty()) {
+  vc >> frame1;
+  if (frame1.empty()) {
     std::cerr << "no frames!\n";
     exit(1);
   }
+
+  cv::cvtColor(frame1, frame, cv::COLOR_RGB2GRAY,0);
 
   opticalCenter.x = frame.cols * 0.5;
   opticalCenter.y = frame.rows * 0.5;
@@ -204,6 +218,14 @@ int main(int argc, char** argv) {
         float orient = std::atan2(d.p[1].y -d.p[0].y,d.p[1].x-d.p[0].x);
         orient*=180/3.14;
         std::cout<<"Orientation: "<<orient<<"\n";
+        P.id=d.id;
+        P.x=d.cxy.x;
+        P.y=d.cxy.y;
+        P.theta=orient;
+        f.write((char*)&P,sizeof(P));
+        f.seekg(-sizeof(P), std::ios::cur);
+        f.read((char*)&P,sizeof(P));
+        std::cout<<"\nid: "<<P.id<<"x: "<<P.x<<"y: "<<P.y<<"Theta: "<<P.theta<<"\n";
     }
 
     cv::Mat show;
@@ -333,7 +355,7 @@ int main(int argc, char** argv) {
   }
 
   detector.reportTimers();
-
+  f.close();
   return 0;
 
 
