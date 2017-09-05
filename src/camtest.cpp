@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
 
   std::fstream f;
   f.open("pose.txt",std::ios::in | std::ios::out | std::ios::binary);
-
+  if(f.fail()) std::cout<<"ERROR!!\n";
   Pose P;
 
   CamTestOptions opts = parse_options(argc, argv);
